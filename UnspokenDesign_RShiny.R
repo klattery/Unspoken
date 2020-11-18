@@ -118,3 +118,4 @@ server <- function(input, output) {
       filename = "AttractionDesign2.csv", content = function (file) {write.csv(attraction_design_2(),file, row.names = FALSE)})
   })
 }
+shinyApp(ui,server)
