@@ -16,7 +16,7 @@ ui <- fluidPage(
         "text/csv",
         "text/comma-separated-values,text/plain",
         ".csv", label = "Restrictions File")),
-      fileInput("constraints", "Choose Constraints CSV (UTF-8) if there are items that can't be shown together. CSV should have columns: item1, ..., itemn. Must have a row for each constraint.", multiple = FALSE, accept = c(
+      fileInput("constraints", "Choose Constraints CSV (UTF-8) if there are items that can't be shown together. CSV should have 2 columns.  Each row has a pair of items that cannot be shown together.", multiple = FALSE, accept = c(
         "text/csv",
         "text/comma-separated-values,text/plain",
         ".csv", label = "Constraints File")),
@@ -118,4 +118,4 @@ server <- function(input, output) {
       filename = "AttractionDesign2.csv", content = function (file) {write.csv(attraction_design_2(),file, row.names = FALSE)})
   })
 }
-shinyApp(ui,server)
+
