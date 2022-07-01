@@ -420,7 +420,8 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   colnames(items_u2)[5] <- "task"
   
   items_u3 <- items_u2 %>%
-    gather('order', 'concept', 1:2)%>%
+    #gather('order', 'concept', 1:2)%>%
+    pivot_longer(c(1:2), names_to = "order", values_to = "concept") %>%
     
     arrange(obs)%>%
     transmute(version, task, order, concept)%>%
