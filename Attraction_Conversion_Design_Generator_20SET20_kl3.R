@@ -45,7 +45,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   #######################################################################
   ####   Just Run this Code to Create Defaults and Helper Variables  ####
   #######################################################################
-  items_task <- 2 # How many items in a task (for Unspoken this is 2 and cannot be changed)
+  items_task <- 4 # How many items in a task (for Unspoken this is 2 and cannot be changed)
   
   # Check that these are what you expect
   n_ver <- nrow(must_haves) # number of versions to create
