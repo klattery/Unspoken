@@ -29,7 +29,7 @@ con_pairs <- NULL
 #######################################################################
 ####   Just Run this Code to Create Defaults and Helper Variables  ####
 #######################################################################
-items_task <- 2 # How many items in a task (for Unspoken this is 2 and cannot be changed)
+items_task <- 4 # How many items in a task (for Unspoken this is 2 and cannot be changed)
 
 # Check that these are what you expect
 n_ver <- nrow(must_haves) # number of versions to create
@@ -242,17 +242,17 @@ check_max_two <- as.matrix(tapply(stats_all[,n_items+2], stats_all[,n_items+2], 
 #Use check files here to set criteria for bal_one and bal_two
 
   bal_one <- as.matrix(stats_all[,n_items+1] < .6) ### MANUAL ### sd of oneway criteria
-  bal_two <- as.matrix(stats_all[,n_items+2] <= 1) ### MANUAL ### max of twoway criteria
+  bal_two <- as.matrix(stats_all[,n_items+2] <= 11) ### MANUAL ### max of twoway criteria
   sum(bal_one * bal_two *!bad_dopt) # check count of designs meeting criteria above
 
 check <- cbind(1:nrow(stats_all),stats_all)[bal_one & bal_two &!bad_dopt,] 
 d_opt <- as.matrix(check[,ncol(check)])
 khist <- hist(d_opt, breaks = 30) # histogram to check for outliers from d-optimal
-khist <- hist(d_opt[(d_opt> .25)], breaks = 30) # Specify d_opt > x to get more refined estimates
+#khist <- hist(d_opt[(d_opt> .25)], breaks = 30) # Specify d_opt > x to get more refined estimates
 # Use hist plot to set d-optimal criteria 
 max(d_opt)
 quantile(d_opt, .95)
-good_des <- check[(check[,ncol(check)] > 1.6),] ### MANUAL ### cutoff from histogram
+good_des <- check[(check[,ncol(check)] > 0),] ### MANUAL ### cutoff from histogram
 # first column of good_des has the design numbers we want to keep
 # Other columns are not relevant
 
