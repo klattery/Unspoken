@@ -1,3 +1,14 @@
+# ntest <- 10
+# ntest_perver <- 7
+# ntest_comp <- 2
+# show_eachitem <- 3
+# show_eachitem_attraction <- 2
+# n_versions <- 10
+# restrictions_table <- NULL
+# constraints_table <- NULL
+# shiny <- FALSE
+# items_task <- 4 # How many items in a task 
+
 conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, show_eachitem_attraction, n_versions, restrictions_table, constraints_table, shiny = TRUE) {
   if(shiny) {
     progress <- shiny::Progress$new()
@@ -436,7 +447,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   # write.table(items_u3, file = paste0(dir,"ConversionDesign.csv"), sep = ",", na = ".", row.names = FALSE) 
   if(shiny) progress$inc(.8, message = "4. Finished Conversion")
   if(!shiny) message("4. Finished Conversion")
-  return(items_u3)
+  return(design_new)
 } 
 
 
