@@ -1,13 +1,13 @@
-# ntest <- 10
-# ntest_perver <- 7
-# ntest_comp <- 2
-# show_eachitem <- 3
-# show_eachitem_attraction <- 2
-# n_versions <- 10
-# restrictions_table <- NULL
-# constraints_table <- NULL
-# shiny <- FALSE
-# items_task <- 4 # How many items in a task 
+ntest <- 10
+ntest_perver <- 7
+ntest_comp <- 2
+show_eachitem <- 3
+show_eachitem_attraction <- 2
+n_versions <- 10
+restrictions_table <- NULL
+constraints_table <- NULL
+shiny <- FALSE
+items_task <- 4 # How many items in a task
 
 conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, show_eachitem_attraction, n_versions, restrictions_table, constraints_table, shiny = TRUE) {
   if(shiny) {
@@ -208,10 +208,21 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   designs_stage2 <- 10000 # Number of Designs to create: 10,000; higher for more sparse
   
   #a) Create task_code as tasks to choose from (indicator coding)
-  task_pop <- expand.grid(1:n_items, 1:n_items) # Generate possible tasks - can be large sample
-  tdrop <- (task_pop[,1] == task_pop[,2]) # picking same item twice is not allowed
-  task_con <- task_pop[!tdrop,] # filter out bad tasks
-  task_code <- diag(n_items)[task_con[,1],]  + diag(n_items)[task_con[,2],] # indicator coded
+  if (items_task > 2) { # Added 3/2019
+    vec_0 <- rep(0, n_items)
+    task_con <- do.call(rbind, lapply(1:100000, function(x){
+      picks <- sample(1:n_items, items_task)
+      result <- vec_0
+      result[picks] <- 1
+      return(result)
+    }))
+    task_code <- unique(task_con)
+  } else {
+    task_pop <- expand.grid(1:n_items, 1:n_items) # Generate possible tasks - can be large sample
+    tdrop <- (task_pop[,1] == task_pop[,2]) # picking same item twice is not allowed
+    task_con <- task_pop[!tdrop,] # filter out bad tasks
+    task_code <- diag(n_items)[task_con[,1],]  + diag(n_items)[task_con[,2],] # indicator coded
+  }
   
   #b) Create target matrix for version
   target_temp <- t(task_code) %*% task_code # empirical target sampling from
@@ -447,9 +458,8 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   # write.table(items_u3, file = paste0(dir,"ConversionDesign.csv"), sep = ",", na = ".", row.names = FALSE) 
   if(shiny) progress$inc(.8, message = "4. Finished Conversion")
   if(!shiny) message("4. Finished Conversion")
-  return(design_new)
+  return(items)
 } 
-
 
 
 
