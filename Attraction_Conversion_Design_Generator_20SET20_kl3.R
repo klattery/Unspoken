@@ -1,15 +1,15 @@
-ntest <- 10
-ntest_perver <- 7
-ntest_comp <- 2
-show_eachitem <- 3
-show_eachitem_attraction <- 2
-n_versions <- 10
-restrictions_table <- NULL
-constraints_table <- NULL
-shiny <- FALSE
-items_task <- 4 # How many items in a task
+# ntest <- 10
+# ntest_perver <- 7
+# ntest_comp <- 2
+# show_eachitem <- 3
+# show_eachitem_attraction <- 2
+# n_versions <- 10
+# restrictions_table <- NULL
+# constraints_table <- NULL
+# shiny <- FALSE
+# items_task <- 4 # How many concepts in a conversion task
 
-conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, show_eachitem_attraction, n_versions, restrictions_table, constraints_table, shiny = TRUE) {
+conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, n_versions, restrictions_table, constraints_table, items_task, shiny = TRUE) {
   if(shiny) {
     progress <- shiny::Progress$new()
     on.exit(progress$close())
@@ -35,15 +35,11 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
     set_comp <- ((ntest+1):(ntest+ntest_comp))
   }
 
-  show_eachitem <- show_eachitem # How many times to show each item in conversion, can be decimal like 2.5
-  show_eachitem_attraction <- show_eachitem_attraction # How many times to show each item in Attraction, cannot be decimal
-  
   if (is.null(restrictions_table)) {
     must_haves <- as.data.frame(c(1:n_versions))
   } else {
     must_haves <- as.data.frame(restrictions_table)
   }
-  
   
   if (is.null(constraints_table)) {
     con_pairs <- NULL
@@ -56,8 +52,6 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   #######################################################################
   ####   Just Run this Code to Create Defaults and Helper Variables  ####
   #######################################################################
-  items_task <- 4 # How many items in a task (for Unspoken this is 2 and cannot be changed)
-  
   # Check that these are what you expect
   n_ver <- nrow(must_haves) # number of versions to create
   n_items <- ntest_perver + length(set_comp) # number of items shown in a version
@@ -252,25 +246,13 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   colnames(stats_export)[1] <- "design_num"
   # write.table(stats_export, file = paste0(dir,"stats_all.csv"), sep = ",", na = ".", row.names = FALSE) 
 
-  ###########################################################
-  #          STOP: MANUAL WORK  SECTION                     #
-  #    Creates "good_des" showing which designs are best    #
-  ###########################################################
-  
-  # Method 1
-  # Directory has .csv file "stats_all".
-  # Use Exel to keep desired rows and import as "good_des"
-  # good_des <- read.csv(paste0(dir, "good_des.csv"))
-  
-  # Method 2
+  # KEEP BEST DESIGNS
   # Create good_des in R  
-  # Some sample code below, but will depend upon your design
   check_sd_one <- as.matrix(tapply(stats_all[,n_items+1], stats_all[,n_items+1], length))
   check_max_two <- as.matrix(tapply(stats_all[,n_items+2], stats_all[,n_items+2], length))
-  #Use check files here to set criteria for bal_one and bal_two
-  
-    bal_one <- as.matrix(stats_all[,n_items+1] <= quantile(stats_all[,n_items+1], .5)) ### MANUAL ### sd of oneway criteria
-    bal_two <- as.matrix(stats_all[,n_items+2] <= quantile(stats_all[,n_items+2], .5)) ### MANUAL ### max of twoway criteria
+
+    bal_one <- as.matrix(stats_all[,n_items+1] <= quantile(stats_all[,n_items+1], .5)) ###  oneway criteria
+    bal_two <- as.matrix(stats_all[,n_items+2] <= quantile(stats_all[,n_items+2], .5)) ###  twoway criteria
     sum(bal_one * bal_two *!bad_dopt) # check count of designs meeting criteria above
     check <- cbind(1:nrow(stats_all),stats_all)[bal_one & bal_two &!bad_dopt,] 
     d_opt <- as.matrix(check[,ncol(check)])
@@ -398,10 +380,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   # Export Results
   # write.table(design_new, file = paste0(dir,"DesignNew.csv"), sep = ",", na = ".", row.names = FALSE)
   # write.table(tab_design, file = paste0(dir,"Design_Tab.csv"), sep = ",", na = ".", row.names = FALSE)
-  items <- t(sapply(1:nrow(design_new),function(i) which(1 == design_new[i,-1])))
   # write.table(items, file = paste0(dir,"DesignNew_Items.csv"), sep = ",", na = ".", row.names = FALSE)
-  sort(unique(as.vector(items)))
-  swipe <- unique(items)
   ####################################################################
   #       design_new has design                                      #
   #       tab_design has the one-way and two-way freq                #
@@ -415,300 +394,46 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   #####      Target output 1) Attraction design matrix 2) Conversion design matrix      #####
   
   
-  #1. change the data frame format to edit the output from original Unspoken codes
+  # Reformat items in stacked form and randomize
+  versions <- design_new[,1]
+  tasks <- do.call(c, lapply(split(versions, versions), function(x) 1:length(x)))
+  items <- t(sapply(1:nrow(design_new),function(i) which(1 == design_new[i,-1])))
+  n_concept <- ncol(items)
+
+  conv_stack <- do.call(rbind, lapply(1:nrow(items), function(i){
+    result <- data.frame(version = rep(versions[i], n_concept),
+                         task = rep(tasks[i], n_concept),
+                         order = 1:n_concept,
+                         item = sample(items[i,], n_concept)
+                         )
+    return(result)
+  }))
+  conv_stack <- conv_stack[order(conv_stack$version, conv_stack$task, conv_stack$order),]
   
-  items <- as_tibble(items)
-  design_new <- as_tibble(design_new)
-  tab_design <- as_tibble(tab_design)
-  design_itemsall <- as_tibble(design_itemsall)
-  stats_export <- as_tibble(stats_export)
-  
-  
-  #2. change conversion output format to designed format
-  
-  items_u1 <- items %>%
-    rename('1'= 1, '2'=2)%>%    
-    mutate(obs=1:nrow(items))%>%
-    mutate(version= rep(1:(nrow(items)/(n_tasks)), each=n_tasks))
-  
-  # (Make a col for tasks)
-  
-  b=n_tasks
-  c=nrow(items)/n_tasks
-  a=1:b
-  task <- as.data.frame(rep(a,c))
-  
-  items_u2 <- cbind(items_u1, task)
-  colnames(items_u2)[5] <- "task"
-  
-  items_u3 <- items_u2 %>%
-    #gather('order', 'concept', 1:2)%>%
-    pivot_longer(c(1:2), names_to = "order", values_to = "concept") %>%
-    
-    arrange(obs)%>%
-    transmute(version, task, order, concept)%>%
-    select(version, task, concept, order)
-  
-  items_u3 <- items_u3 %>%
-    mutate(product=0)
-    
-  items_u3 <- items_u3[,c(1,2,3,5,4)]
-  
-  
-  # write.table(items_u3, file = paste0(dir,"ConversionDesign.csv"), sep = ",", na = ".", row.names = FALSE) 
   if(shiny) progress$inc(.8, message = "4. Finished Conversion")
   if(!shiny) message("4. Finished Conversion")
-  return(items)
+  return(conv_stack)
 } 
 
-
-
-attraction_function_1 <- function(items_u3, ntest, ntest_comp, ntest_perver, show_eachitem_attraction) { 
-  set_test <- 1:ntest
-  
-  if (ntest_comp == 0) {
-    set_comp <- NULL
-  } else {
-    set_comp <- ((ntest+1):(ntest+ntest_comp))
-  }
-  
-  #3. Change attraction output format to designed formats
-  
-  sumi3<- items_u3 %>%
-    group_by(version)%>%
-    summarize(ncon = n_distinct(concept))
-  
-  nconcept_a<- mean(sumi3$ncon) 
-  
-  items_u4 <- items_u3 %>%
-    transmute(version, concept)%>%
-    group_by(version)%>%
-    distinct(concept)
-  
-  items_u4 <- as_tibble(items_u4)
-  
-  rand1=as.data.frame(runif(1:nrow(items_u4)))
-  colnames(rand1)[1] <- "rand"    
-  
-  rand2=as.data.frame(runif(1:nrow(items_u4)))
-  colnames(rand2)[1] <- "rand" 
-  
-  items_u5a <- cbind(items_u4, rand1)
-  items_u5b <- cbind(items_u4, rand2)
-  
-  items_u6a <- items_u5a %>%
-    arrange(version, rand)
-  items_u6b <- items_u5b %>%
-    arrange(version, rand)
-  
-  if(show_eachitem_attraction==3){
-    rand3=as.data.frame(runif(1:nrow(items_u4)))
-    colnames(rand3)[1] <- "rand"
-    items_u5c <- cbind(items_u4, rand3)
-    items_u6c <- items_u5c %>%
-      arrange(version, rand)
-  }
-  
-  # (make a new col for attention test question)
-  
-  nversion_a <- (max(items_u6a$version))
-  nconcept_a <- (ntest_perver+length(set_comp))
-  max_con <- max(set_test,set_comp)
-  att_n_tasks = show_eachitem_attraction*nconcept_a
-  
-  attt1 <- tibble(version=(1:nversion_a), concept=max_con+1, rand=runif(1:nversion_a))
-  attt2 <- tibble(version=(1:nversion_a), concept=max_con+2, rand=runif(1:nversion_a))
-  attt3 <- tibble(version=(1:nversion_a), concept=max_con+1, rand=runif(1:nversion_a))
-  
-  # (merge)
-  items_u7a <- rbind(items_u6a, attt1) %>%
-    arrange(version, rand)
-  items_u7b <- rbind(items_u6b, attt2) %>%
-    arrange(version, rand)
-  if(show_eachitem_attraction==3){
-    items_u7c <- rbind(items_u6c, attt3) %>%
-      arrange(version, rand)
-  }
-  
-  # (add task)
-  items_u8a <- items_u7a%>%
-    group_by(version)%>%
-    mutate(task=min_rank(rand))
-  items_u8b <- items_u7b%>%
-    group_by(version)%>%
-    mutate(task=min_rank(rand))
-  if(show_eachitem_attraction==3){
-    items_u8c <- items_u7c%>%
-      group_by(version)%>%
-      mutate(task=min_rank(rand))
-  }
-  
-  # (final output selection)
-  if(show_eachitem_attraction==2){
-    items_u9a <- as.data.frame(items_u8a)%>%
-      transmute(version, task, concept)
-    items_u9b <- as.data.frame(items_u8b)%>%
-      transmute(version, task, concept)
-    # write.table(items_u9a, file = paste0(dir,"AttractionDesign_1.csv"), sep = ",", na = ".", row.names = FALSE)
-    # write.table(items_u9b, file = paste0(dir,"AttractionDesign_2.csv"), sep = ",", na = ".", row.names = FALSE)
-    attraction_1 = items_u9a
-  }
-  
-  if(show_eachitem_attraction==3){
-    items_u9 <- rbind(items_u8a, items_u8b, items_u8c)
-    items_u9 <- items_u9[,-4]
-    items_u9 <- arrange(items_u9,version)
-    
-    v_tasks <- c(1:(att_n_tasks+3))
-    v_tasks <- rep(v_tasks, times=nversion_a)
-    items_u9 <- cbind(items_u9,task=v_tasks)
-    
-    half_task <- round(max(v_tasks)/2)
-    
-    items_u10a <- items_u9
-    items_u10a <- items_u10a[items_u10a$task<(half_task+1),]
-    
-    items_u10b <- items_u9
-    items_u10b <- items_u10b[items_u10b$task>half_task,]
-    items_u10b <- items_u10b[,-4]
-    v_tasks2 <- c(1:(att_n_tasks+3-half_task))
-    v_tasks2 <- rep(v_tasks2, times=nversion_a)
-    items_u10b <- cbind(items_u10b,task=v_tasks2)
-    items_u10b <- rbind(items_u10b)
-  
-    items_u10a <- as.data.frame(items_u10a)%>%
-      transmute(version, task, concept)
-    items_u10b <- as.data.frame(items_u10b)%>%
-      transmute(version, task, concept)
-    # write.table(items_u10a, file = paste0(dir,"AttractionDesign_1.csv"), sep = ",", na = ".", row.names = FALSE)
-    # write.table(items_u10b, file = paste0(dir,"AttractionDesign_2.csv"), sep = ",", na = ".", row.names = FALSE)
-    attraction_1 = items_u10a
-  }
-  return(attraction_1)
+# Now do attraction
+attraction_function <- function(conv_stack, show_eachitem_attraction){
+  ksplit <- split(conv_stack, conv_stack$version) # Split by version
+  attr_stack <- do.call(rbind, lapply(1:length(ksplit), function(i){
+    items_u <- unique(ksplit[[i]]$items)  # Unique items in version
+    n_concept <- length(items_u) # Concepts in version
+    result_list <- vector("list", show_eachitem_attraction)
+    for (j in 1:show_eachitem_attraction){
+      result_list[[j]] <- data.frame(version = rep(i, n_concept),
+                                     task = rep(j, n_concept),
+                                     order = 1:n_concept,
+                                     item = sample(items_u, n_concept))      
+    } # end for
+    result <- do.call(rbind, result_list)
+  }))
+  return(attr_stack)  
 }
 
 
-attraction_function_2 <- function(items_u3, ntest, ntest_comp, ntest_perver, show_eachitem_attraction) { 
-  set_test <- 1:ntest
-  
-  if (ntest_comp == 0) {
-    set_comp <- NULL
-  } else {
-    set_comp <- ((ntest+1):(ntest+ntest_comp))
-  }
-  
-  #3. Change attraction output format to designed formats
-  
-  sumi3<- items_u3 %>%
-    group_by(version)%>%
-    summarize(ncon = n_distinct(concept))
-  
-  nconcept_a<- mean(sumi3$ncon) 
-  
-  items_u4 <- items_u3 %>%
-    transmute(version, concept)%>%
-    group_by(version)%>%
-    distinct(concept)
-  
-  items_u4 <- as_tibble(items_u4)
-  
-  rand1=as.data.frame(runif(1:nrow(items_u4)))
-  colnames(rand1)[1] <- "rand"    
-  
-  rand2=as.data.frame(runif(1:nrow(items_u4)))
-  colnames(rand2)[1] <- "rand" 
-  
-  items_u5a <- cbind(items_u4, rand1)
-  items_u5b <- cbind(items_u4, rand2)
-  
-  items_u6a <- items_u5a %>%
-    arrange(version, rand)
-  items_u6b <- items_u5b %>%
-    arrange(version, rand)
-  
-  if(show_eachitem_attraction==3){
-    rand3=as.data.frame(runif(1:nrow(items_u4)))
-    colnames(rand3)[1] <- "rand"
-    items_u5c <- cbind(items_u4, rand3)
-    items_u6c <- items_u5c %>%
-      arrange(version, rand)
-  }
-  
-  # (make a new col for attention test question)
-  
-  nversion_a <- (max(items_u6a$version))
-  nconcept_a <- (ntest_perver+length(set_comp))
-  max_con <- max(set_test,set_comp)
-  att_n_tasks = show_eachitem_attraction*nconcept_a
-  
-  attt1 <- tibble(version=(1:nversion_a), concept=max_con+1, rand=runif(1:nversion_a))
-  attt2 <- tibble(version=(1:nversion_a), concept=max_con+2, rand=runif(1:nversion_a))
-  attt3 <- tibble(version=(1:nversion_a), concept=max_con+1, rand=runif(1:nversion_a))
-  
-  # (merge)
-  items_u7a <- rbind(items_u6a, attt1) %>%
-    arrange(version, rand)
-  items_u7b <- rbind(items_u6b, attt2) %>%
-    arrange(version, rand)
-  if(show_eachitem_attraction==3){
-    items_u7c <- rbind(items_u6c, attt3) %>%
-      arrange(version, rand)
-  }
-  
-  # (add task)
-  items_u8a <- items_u7a%>%
-    group_by(version)%>%
-    mutate(task=min_rank(rand))
-  items_u8b <- items_u7b%>%
-    group_by(version)%>%
-    mutate(task=min_rank(rand))
-  if(show_eachitem_attraction==3){
-    items_u8c <- items_u7c%>%
-      group_by(version)%>%
-      mutate(task=min_rank(rand))
-  }
-  
-  # (final output selection)
-  if(show_eachitem_attraction==2){
-    items_u9a <- as.data.frame(items_u8a)%>%
-      transmute(version, task, concept)
-    items_u9b <- as.data.frame(items_u8b)%>%
-      transmute(version, task, concept)
-    # write.table(items_u9a, file = paste0(dir,"AttractionDesign_1.csv"), sep = ",", na = ".", row.names = FALSE)
-    # write.table(items_u9b, file = paste0(dir,"AttractionDesign_2.csv"), sep = ",", na = ".", row.names = FALSE)
-    attraction_2 = items_u9b
-  }
-  
-  if(show_eachitem_attraction==3){
-    items_u9 <- rbind(items_u8a, items_u8b, items_u8c)
-    items_u9 <- items_u9[,-4]
-    items_u9 <- arrange(items_u9,version)
-    
-    v_tasks <- c(1:(att_n_tasks+3))
-    v_tasks <- rep(v_tasks, times=nversion_a)
-    items_u9 <- cbind(items_u9,task=v_tasks)
-    
-    half_task <- round(max(v_tasks)/2)
-    
-    items_u10a <- items_u9
-    items_u10a <- items_u10a[items_u10a$task<(half_task+1),]
-    
-    items_u10b <- items_u9
-    items_u10b <- items_u10b[items_u10b$task>half_task,]
-    items_u10b <- items_u10b[,-4]
-    v_tasks2 <- c(1:(att_n_tasks+3-half_task))
-    v_tasks2 <- rep(v_tasks2, times=nversion_a)
-    items_u10b <- cbind(items_u10b,task=v_tasks2)
-    items_u10b <- rbind(items_u10b)
-    
-    items_u10a <- as.data.frame(items_u10a)%>%
-      transmute(version, task, concept)
-    items_u10b <- as.data.frame(items_u10b)%>%
-      transmute(version, task, concept)
-    # write.table(items_u10a, file = paste0(dir,"AttractionDesign_1.csv"), sep = ",", na = ".", row.names = FALSE)
-    # write.table(items_u10b, file = paste0(dir,"AttractionDesign_2.csv"), sep = ",", na = ".", row.names = FALSE)
-    attraction_2 = items_u10b
-  }
-  return(attraction_2)
-}
+
+
 

@@ -23,8 +23,9 @@ ui <- fluidPage(
       actionButton("setup_ready","Setup Done", class = "btn-primary"),
       h4("Download Files once program finishes running:"),
       h3(downloadButton("downconversion","Conversion Design")),
-      h3(downloadButton("downattraction1","Attraction Design 1")),
-      h3(downloadButton("downattraction2", "Attraction Design 2"))),
+      h3(downloadButton("downattraction1","Attraction Design 1"))
+      #h3(downloadButton("downattraction2", "Attraction Design 2"))
+      ),
     
     mainPanel(
       wellPanel(style = "background:#E1EBFE",
@@ -40,17 +41,11 @@ ui <- fluidPage(
       h5("Total times each item was shown for each version:"),
       h6(dataTableOutput("conversion_checks_2")),
       
-      h4("Attraction 1 Frequency Checks:"),
+      h4("Attraction Frequency Checks:"),
       h5("Total times each item was shown across all versions:"),
       h6(dataTableOutput("att_1_checks")),
       h5("Total times each item was shown for each version:"),
       h6(dataTableOutput("att_1_checks_2")),
-      
-      h4("Attraction 2 Frequency Checks:"),
-      h5("Total times each item was shown across all versions:"),
-      h6(dataTableOutput("att_2_checks"),
-      h5("Total times each item was shown for each version:"),
-      h6(dataTableOutput("att_2_checks_2")))
     )))
 
 # server
@@ -86,36 +81,26 @@ server <- function(input, output) {
   observeEvent(input$setup_ready, {
     
     conversion_design <- reactive({
-      final <- conversion_function(input$numberitems, input$ntest_perver, input$compitems, input$show_eachitem, input$show_eachitem_att, input$numberversions, restrictions_table(), constraints_table())
+      final <- conversion_function(input$numberitems, input$ntest_perver, input$compitems, input$show_eachitem,  input$numberversions, restrictions_table(), constraints_table())
       final
     })
     
-    # attraction_design_1 <- reactive({
-    #   final <- attraction_function_1(conversion_design(), input$numberitems, input$compitems, input$ntest_perver, input$show_eachitem_att)
-    #   final
-    # })
-    # 
-    # attraction_design_2 <- reactive({
-    #   final <- attraction_function_2(conversion_design(), input$numberitems, input$compitems, input$ntest_perver, input$show_eachitem_att)
-    #   final
-    # })
+    attraction_design <- reactive({
+       final <- attraction_function(conversion_design(), input$show_eachitem_att)
+       final
+     })
+
+    output$conversion_checks <- renderDataTable({dcast(conversion_design(), . ~ item, value.var = 'item', fun.aggregate = length)})
+    output$conversion_checks_2 <- renderDataTable({dcast(conversion_design(), version ~ item, value.var = 'item', fun.aggregate = length)})
     
-    output$conversion_checks <- renderDataTable({dcast(conversion_design(), . ~ concept, value.var = 'concept', fun.aggregate = length)})
-    output$conversion_checks_2 <- renderDataTable({dcast(conversion_design(), version ~ concept, value.var = 'concept', fun.aggregate = length)})
-    
-    # output$att_1_checks <- renderDataTable({dcast(attraction_design_1(), . ~ concept, value.var = 'concept', fun.aggregate = length)})
-    # output$att_1_checks_2 <- renderDataTable({dcast(attraction_design_1(), version ~ concept, value.var = 'concept', fun.aggregate = length)})
-    # 
-    # output$att_2_checks <- renderDataTable({dcast(attraction_design_2(), . ~ concept, value.var = 'concept', fun.aggregate = length)})
-    # output$att_2_checks_2 <- renderDataTable({dcast(attraction_design_2(), version ~ concept, value.var = 'concept', fun.aggregate = length)})
+    output$att_1_checks <- renderDataTable({dcast(attraction_design(), . ~ item, value.var = 'item', fun.aggregate = length)})
+    output$att_1_checks_2 <- renderDataTable({dcast(attraction_design(), version ~ item, value.var = 'item', fun.aggregate = length)})
 
     
     output$downconversion <- downloadHandler(
       filename = "ConversionDesign.csv", content = function (file) {write.csv(conversion_design(),file, row.names = FALSE)})
-    # output$downattraction1 <- downloadHandler(
-    #   filename = "AttractionDesign1.csv", content = function (file) {write.csv(attraction_design_1(),file, row.names = FALSE)})
-    # output$downattraction2 <- downloadHandler(
-    #   filename = "AttractionDesign2.csv", content = function (file) {write.csv(attraction_design_2(),file, row.names = FALSE)})
+    output$downattraction <- downloadHandler(
+       filename = "AttractionDesign.csv", content = function (file) {write.csv(attraction_design(),file, row.names = FALSE)})
   })
 }
 
