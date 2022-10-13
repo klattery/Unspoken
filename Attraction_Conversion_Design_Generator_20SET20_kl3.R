@@ -9,7 +9,7 @@
 # shiny <- FALSE
 # items_task <- 4 # How many concepts in a conversion task
 
-conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, n_versions, restrictions_table, constraints_table, items_task, shiny = TRUE) {
+conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, items_task, n_versions, restrictions_table, constraints_table, shiny = TRUE) {
   if(shiny) {
     progress <- shiny::Progress$new()
     on.exit(progress$close())

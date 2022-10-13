@@ -10,6 +10,7 @@ ui <- fluidPage(
       numericInput("compitems", label = "Select number of competitor items, always shown in each version, not included in client items:", value = 0),
       h5(strong(htmlOutput("sample_size"))),
       numericInput("show_eachitem", label = "Number of times to show each item in conversion (can be a decimal). Recommended is 2.5+, tool can fail otherwise:", value = 3),
+      numericInput("items_task", label = "Number of items to show in each conversion task. 2 is standard:", value = 2),
       numericInput("show_eachitem_att", label = "Number of times to show each item in attraction (not a decimal). Recommended is 2+, tool fails otherwise:", value = 2),
       numericInput("numberversions", label = "Number of versions:", value = 100),
       fileInput("restrictions", "Choose Restrictions CSV (UTF-8) if there are restrictions on items in versions. CSV should have columns: version, item1, ..., itemn. Must have a row for each version.", multiple = FALSE, accept = c(
@@ -23,7 +24,7 @@ ui <- fluidPage(
       actionButton("setup_ready","Setup Done", class = "btn-primary"),
       h4("Download Files once program finishes running:"),
       h3(downloadButton("downconversion","Conversion Design")),
-      h3(downloadButton("downattraction1","Attraction Design 1"))
+      h3(downloadButton("downattraction","Attraction Design 1"))
       #h3(downloadButton("downattraction2", "Attraction Design 2"))
       ),
     
@@ -81,7 +82,7 @@ server <- function(input, output) {
   observeEvent(input$setup_ready, {
     
     conversion_design <- reactive({
-      final <- conversion_function(input$numberitems, input$ntest_perver, input$compitems, input$show_eachitem,  input$numberversions, restrictions_table(), constraints_table())
+      final <- conversion_function(input$numberitems, input$ntest_perver, input$compitems, input$show_eachitem,  input$items_task, input$numberversions, restrictions_table(), constraints_table())
       final
     })
     
