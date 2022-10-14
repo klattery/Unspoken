@@ -111,4 +111,3 @@ server <- function(input, output) {
        filename = "AttractionDesign.csv", content = function (file) {write.csv(attraction_design(),file, row.names = FALSE)})
   })
 }
-
