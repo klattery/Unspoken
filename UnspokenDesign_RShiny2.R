@@ -24,7 +24,7 @@ ui <- fluidPage(
       actionButton("setup_ready","Setup Done", class = "btn-primary"),
       h4("Download Files once program finishes running:"),
       h3(downloadButton("downconversion","Conversion Design")),
-      h3(downloadButton("downattraction","Attraction Design 1"))
+      h3(downloadButton("downattraction","Attraction Design"))
       #h3(downloadButton("downattraction2", "Attraction Design 2"))
       ),
     
@@ -90,7 +90,11 @@ server <- function(input, output) {
        final <- attraction_function(conversion_design(), input$show_eachitem_att)
        final
      })
-
+    attraction_design_1 <- reactive({
+      final <- attraction_function_1(conversion_design(), input$numberitems, input$compitems, input$ntest_perver, input$show_eachitem_att)
+      final
+    })
+    
     output$conversion_checks <- renderDataTable({dcast(conversion_design(), . ~ item, value.var = 'item', fun.aggregate = length)})
     output$conversion_checks_2 <- renderDataTable({dcast(conversion_design(), version ~ item, value.var = 'item', fun.aggregate = length)})
     

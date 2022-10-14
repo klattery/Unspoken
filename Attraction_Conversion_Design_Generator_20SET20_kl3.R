@@ -1,14 +1,3 @@
-# ntest <- 10
-# ntest_perver <- 7
-# ntest_comp <- 2
-# show_eachitem <- 3
-# show_eachitem_attraction <- 2
-# n_versions <- 10
-# restrictions_table <- NULL
-# constraints_table <- NULL
-# shiny <- FALSE
-# items_task <- 4 # How many concepts in a conversion task
-
 conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, items_task, n_versions, restrictions_table, constraints_table, shiny = TRUE) {
   if(shiny) {
     progress <- shiny::Progress$new()
@@ -419,7 +408,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
 attraction_function <- function(conv_stack, show_eachitem_attraction){
   ksplit <- split(conv_stack, conv_stack$version) # Split by version
   attr_stack <- do.call(rbind, lapply(1:length(ksplit), function(i){
-    items_u <- unique(ksplit[[i]]$items)  # Unique items in version
+    items_u <- unique(ksplit[[i]]$item)  # Unique items in version
     n_concept <- length(items_u) # Concepts in version
     result_list <- vector("list", show_eachitem_attraction)
     for (j in 1:show_eachitem_attraction){
