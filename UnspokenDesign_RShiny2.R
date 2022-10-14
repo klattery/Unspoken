@@ -4,14 +4,17 @@ ui <- fluidPage(
   titlePanel(title=div(img(src="skim.png", height = 70), "Unspoken Design Generator"),windowTitle = "Unspoken Design"),
   sidebarLayout(
     sidebarPanel(
-      h3("Set-Up:"),
-      numericInput("numberitems", label = "Select number of total client items:", value = 10),
-      numericInput("ntest_perver", label = "Select number of client items to be shown per version (subset):", value = 5),
-      numericInput("compitems", label = "Select number of competitor items, always shown in each version, not included in client items:", value = 0),
+      h3("Client and Optional Competitor Items:"),
+      numericInput("numberitems", label = "Number of total client items:", value = 10),
+      numericInput("ntest_perver", label = "Number of client items to be shown per version (subset):", value = 5),
+      numericInput("compitems", label = "Number of competitor items, always shown in each version, not included in client items:", value = 0),
       h5(strong(htmlOutput("sample_size"))),
+      h3("Attraction:"),
       numericInput("show_eachitem_att", label = "Attraction: Number of times to show each item (not a decimal). Recommended is 2+:", value = 2),
+      h3("Conversion:"),
       numericInput("show_eachitem", label = "Conversion: Number of times to show each item in conversion (can be a decimal). Recommended is 2.5+:", value = 3),
       numericInput("items_task", label = "Conversion: Number of items to show in each task (not a decimal). 2 is standard:", value = 2),
+      h3("Other Specs:"),
       numericInput("numberversions", label = "Number of versions:", value = 100),
       fileInput("restrictions", "Choose Restrictions CSV (UTF-8) if there are restrictions on items in versions. CSV should have columns: version, item1, ..., itemn. Must have a row for each version.", multiple = FALSE, accept = c(
         "text/csv",
