@@ -1,10 +1,11 @@
 # user interface
 ui <- fluidPage(
   # theme = shinytheme("flatly"),
+  tags$style("p { color: blue;}"),
   titlePanel(title=div(img(src="skim.png", height = 70), "Unspoken Design Generator"),windowTitle = "Unspoken Design"),
   sidebarLayout(
     sidebarPanel(
-      h4(strong("Client and Optional Competitor Items:")),
+      h4(p("Client and Optional Competitor Items:")),
       numericInput("numberitems", label = "Number of total client items:", value = 10),
       numericInput("ntest_perver", label = "Number of client items to be shown per version (subset):", value = 5),
       numericInput("compitems", label = "Number of competitor items, always shown in each version, not included in client items:", value = 0),
