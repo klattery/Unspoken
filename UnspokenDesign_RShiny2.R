@@ -9,9 +9,9 @@ ui <- fluidPage(
       numericInput("ntest_perver", label = "Select number of client items to be shown per version (subset):", value = 5),
       numericInput("compitems", label = "Select number of competitor items, always shown in each version, not included in client items:", value = 0),
       h5(strong(htmlOutput("sample_size"))),
-      numericInput("show_eachitem", label = "Number of times to show each item in conversion (can be a decimal). Recommended is 2.5+, tool can fail otherwise:", value = 3),
-      numericInput("items_task", label = "Number of items to show in each conversion task. 2 is standard:", value = 2),
-      numericInput("show_eachitem_att", label = "Number of times to show each item in attraction (not a decimal). Recommended is 2+, tool fails otherwise:", value = 2),
+      numericInput("show_eachitem_att", label = "Attraction: Number of times to show each item (not a decimal). Recommended is 2+:", value = 2),
+      numericInput("show_eachitem", label = "Conversion: Number of times to show each item in conversion (can be a decimal). Recommended is 2.5+:", value = 3),
+      numericInput("items_task", label = "Conversion: Number of items to show in each task (not a decimal). 2 is standard:", value = 2),
       numericInput("numberversions", label = "Number of versions:", value = 100),
       fileInput("restrictions", "Choose Restrictions CSV (UTF-8) if there are restrictions on items in versions. CSV should have columns: version, item1, ..., itemn. Must have a row for each version.", multiple = FALSE, accept = c(
         "text/csv",
