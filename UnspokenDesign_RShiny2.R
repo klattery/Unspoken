@@ -4,17 +4,17 @@ ui <- fluidPage(
   titlePanel(title=div(img(src="skim.png", height = 70), "Unspoken Design Generator"),windowTitle = "Unspoken Design"),
   sidebarLayout(
     sidebarPanel(
-      h3("Client and Optional Competitor Items:"),
+      h4("Client and Optional Competitor Items:"),
       numericInput("numberitems", label = "Number of total client items:", value = 10),
       numericInput("ntest_perver", label = "Number of client items to be shown per version (subset):", value = 5),
       numericInput("compitems", label = "Number of competitor items, always shown in each version, not included in client items:", value = 0),
       h5(strong(htmlOutput("sample_size"))),
-      h3("Attraction:"),
-      numericInput("show_eachitem_att", label = "Attraction: Number of times to show each item (not a decimal). Recommended is 2+:", value = 2),
-      h3("Conversion:"),
-      numericInput("show_eachitem", label = "Conversion: Number of times to show each item in conversion (can be a decimal). Recommended is 2.5+:", value = 3),
-      numericInput("items_task", label = "Conversion: Number of items to show in each task (not a decimal). 2 is standard:", value = 2),
-      h3("Other Specs:"),
+      h4("Attraction:"),
+      numericInput("show_eachitem_att", label = "Number of times to show each item in attraction (not a decimal). Recommended is 2+:", value = 2),
+      h4("Conversion:"),
+      numericInput("show_eachitem", label = "Number of times to show each item in conversion (can be a decimal). Recommended is 2.5+:", value = 3),
+      numericInput("items_task", label = "Number of items to show in each conversion task (not a decimal). 2 is standard:", value = 2),
+      h4("Other Specs:"),
       numericInput("numberversions", label = "Number of versions:", value = 100),
       fileInput("restrictions", "Choose Restrictions CSV (UTF-8) if there are restrictions on items in versions. CSV should have columns: version, item1, ..., itemn. Must have a row for each version.", multiple = FALSE, accept = c(
         "text/csv",
@@ -28,7 +28,6 @@ ui <- fluidPage(
       h4("Download Files once program finishes running:"),
       h3(downloadButton("downconversion","Conversion Design")),
       h3(downloadButton("downattraction","Attraction Design"))
-      #h3(downloadButton("downattraction2", "Attraction Design 2"))
       ),
     
     mainPanel(
@@ -58,7 +57,7 @@ server <- function(input, output) {
   # recommended sample size
   output$sample_size <- renderText({
     sample <- ((300*input$numberitems)/input$ntest_perver)
-    text<- paste("Your minimum sample size is:","<font color=\"#F27524\">",sample,"</font>", ". Based on your number of total client items and subset size. Sample Size = 300*total_items/items_per_version.")
+    text<- paste("Your minimum sample size is:","<font color=\"#F27524\">",sample,"</font>", ". Based on total client items and subset size. Sample Size = 300*total_items/items_per_version.")
     text
   })
   
