@@ -34,10 +34,10 @@ ui <- fluidPage(
     mainPanel(
       wellPanel(style = "background:#E1EBFE",
         h3("Hi, Welcome to the Unspoken-Design Generator Portal!"),
-        h4("Please be patient. Your design will take some time to run so we can make sure it is perfectly balanced. 
-           Processing time dependes on number of versions. You will know your designs are ready when you see the 1-way tables in the checks below. 
+        h4("Please be patient. Your design will take some time to run so we can make sure it is well balanced. 
+           Processing time depends on number of items and versions. You will know your designs are ready when you see the 1-way tables in the checks below. 
            Have a great day and good luck with your Unspoken Project!"),
-        h4("Note: 2 extra concepts will be added to your attraction designs for attention checks.")
+        #h4("Note: 2 extra concepts will be added to your attraction designs for attention checks.")
         ),
       h4("Conversion Frequency Checks:"),
       h5("Total times each item was shown across all versions:"),
