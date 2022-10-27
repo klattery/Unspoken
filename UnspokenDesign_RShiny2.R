@@ -92,11 +92,7 @@ server <- function(input, output) {
        final <- attraction_function(conversion_design(), input$show_eachitem_att)
        final
      })
-    attraction_design_1 <- reactive({
-      final <- attraction_function_1(conversion_design(), input$numberitems, input$compitems, input$ntest_perver, input$show_eachitem_att)
-      final
-    })
-    
+
     output$conversion_checks <- renderDataTable({dcast(conversion_design(), . ~ item, value.var = 'item', fun.aggregate = length)})
     output$conversion_checks_2 <- renderDataTable({dcast(conversion_design(), version ~ item, value.var = 'item', fun.aggregate = length)})
     
