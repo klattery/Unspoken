@@ -29,7 +29,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   } else {
     must_haves <- as.data.frame(restrictions_table)
   }
-  
+
   if (is.null(constraints_table)) {
     con_pairs <- NULL
   } else {
@@ -125,7 +125,8 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
       return(bad)
     }
     bad <- check_bad(x, con_pairs)
-    while (sum(bad) > 0){
+    iter <- 0
+    while (sum(bad) > 0 & iter < 500){
       if (sum(bad) == nrow(x)) bad[1] <- FALSE # Can't have all bad
       x <- rbind(x[bad,], x[!bad,])
       for (i in 1:sum(bad)){
@@ -139,8 +140,12 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
           x[subrow,badrow[2]] <- 1
         }
       }
+      iter <- iter + 1
       bad <- check_bad(x, con_pairs)
     } # end while 
+    if (sum(bad) > 0){
+      stop("FATAL Error: Could not Create Version of Tasks with Constraints and without Dups")
+    }
     return(x)
   }
   
@@ -191,7 +196,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   designs_stage2 <- 10000 # Number of Designs to create: 10,000; higher for more sparse
   
   #a) Create task_code as tasks to choose from (indicator coding)
-  if (items_task > 2) { # Added 3/2019
+  if (items_task > 3) { # Added 3/2019
     vec_0 <- rep(0, n_items)
     task_con <- do.call(rbind, lapply(1:100000, function(x){
       picks <- sample(1:n_items, items_task)
@@ -200,12 +205,24 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
       return(result)
     }))
     task_code <- unique(task_con)
-  } else {
-    task_pop <- expand.grid(1:n_items, 1:n_items) # Generate possible tasks - can be large sample
-    tdrop <- (task_pop[,1] == task_pop[,2]) # picking same item twice is not allowed
-    task_con <- task_pop[!tdrop,] # filter out bad tasks
-    task_code <- diag(n_items)[task_con[,1],]  + diag(n_items)[task_con[,2],] # indicator coded
+  } else { # Modified Oct 2022
+    task_con <- t(combn(1:n_items, items_task))
+    task_code <- matrix(0,nrow = nrow(task_con), ncol = n_items)
+    for (i in 1:ncol(task_con)){
+      task_code[cbind(1:nrow(task_code),task_con[,i])] <- 1
+    }
   }
+  # Clean task_code based on con_pairs Added Oct 2022
+  bad <- duplicated(task_code)
+  if (!is.null(con_pairs)){
+    kmatch <- sapply(con_pairs, function(pair) rowSums(task_code[,pair]))
+    bad <- bad | (rowSums(kmatch == 2) > 0)
+  }
+  task_code <- task_code[!bad,]
+  if (nrow(task_code) < n_tasks){
+    if(shiny) progress$inc(1, message = "FATAL Error: Possible tasks < Requested Tasks")
+    stop("FATAL Error: Possible tasks < Requested Tasks")
+  } 
   
   #b) Create target matrix for version
   target_temp <- t(task_code) %*% task_code # empirical target sampling from
