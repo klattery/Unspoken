@@ -156,7 +156,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   #########################################################
   # Check target (target 1-way and 2-way) and target_wt (how important to hit target)
   # Adjust them if desired
-  diag(target_1_wt) <- (nrow(target_1)-1) * 2 # *2 or *5 for better one way
+  diag(target_1_wt) <- (nrow(target_1)-1) * 5 # *2 or *5 for better one way
   designs_stage1 <- 30 # 10 is reasonable, but can go higher if needed (30 takes time)
   
   # Generate design_itemsall
