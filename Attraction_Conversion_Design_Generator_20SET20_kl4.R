@@ -65,7 +65,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
     vec0[vec_val] <- 1
     return(vec0)
   }
-  gen_design <- function(dummy, design_in, npicks, target, target_wt){
+  gen_design <- function(design_in, npicks, target, target_wt){
     design <- design_in
     for (iter in 1:10){
       for (i in sample(nrow(design))){
@@ -174,7 +174,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   # Next step TAKES TIME
   if(shiny) progress$inc(.2, message = "1. Creating Design for Items Shown Each Version")
   if(!shiny) message("1. Creating Design for Items Shown Each Version")
-  multdesigns <- lapply(1:designs_stage1, gen_design,design_in, ntest_perver, target_1, target_1_wt) 
+  multdesigns <- mclapply(1:designs_stage1, gen_design,design_in, ntest_perver, target_1, target_1_wt) 
   fit_all <- sapply(multdesigns, compfit, target_1, target_1_wt) # fit of each member above
   design_testpick <- multdesigns[[which.min(fit_all)]]  # design of test items to show for each version (row)
   summary_stat <- t(design_testpick) %*% design_testpick # shows frequency (diagnol) and cross tab of items shown together
