@@ -28,13 +28,13 @@ functions{
         int num_items =  end[t] - start[t] + 1;
         vector[num_items] util =  X[start[t]:end[t]] * col(beta_ind,task_individual[t]) * beta_scale[task_individual[t]];
         vector[num_items] wt_tasks = (wts_bound_att[1] + (wts_bound_att[2] - wts_bound_att[1]) *
-                                        inv_logit(timez_flip[start[t]:end[t]] * timescale_att[task_individual[t]])) *
-          wts[t]; // weight for each row of attraction data
+                    inv_logit(timez_flip[start[t]:end[t]] * timescale_att[task_individual[t]])) *
+                    wts[t]; // weight for each row of attraction data
         
         vector[num_items] prob = inv_logit(util - thresh_base[task_individual[t]]); // applies scale factor to utilities
         ll+= dot_product(wt_tasks,
                          lmultiply(dep[start[t]:end[t]],     prob) +
-                           lmultiply(1-dep[start[t]:end[t]], 1-prob));
+                         lmultiply(1-dep[start[t]:end[t]], 1-prob));
         
         // Now Love > Threshold > Like        
         if (thresh_high_exist == 1){
@@ -118,7 +118,7 @@ functions{
 
 data {
   // Sizing Constants, Number of:
-    int N; // Rows in data file
+  int N; // Rows in data file
   int P; // Parameters = ncol(coded independent data)
   int I; // Individuals
   int T; // Total unique tasks (individuals x mean tasks per individual)
@@ -126,13 +126,13 @@ data {
   // Main data
   vector<lower = 0, upper = 1>[N] dep; // Dep variable
   array[3] int<lower = 0> sizes; // 1=# columns coded, 2 = # cat vars w/levels, 3=# rows in code_master 
-    matrix[N, sizes[1]] ind_coded; // Coded data mapped to ind 
+  matrix[N, sizes[1]] ind_coded; // Coded data mapped to ind 
   array[N, sizes[2]]int<lower = 0> ind_levels;
   
   // coding for each attribute combined in code_master, and code_blocks that define attributes in that
   matrix[sizes[3], P] code_master;
   int n_atts; // rows in code blocks = # atts
-    array[n_atts, 5] int<lower = 0> code_blocks;
+  array[n_atts, 5] int<lower = 0> code_blocks;
   
   // Upper level priors
   cov_matrix[P] prior_cov;  // Prior covariance matrix, recommend Lenk adjustment
@@ -144,7 +144,7 @@ data {
   int<lower = 0, upper =1> con_use; // 0 = ignore constraints, 1 = use_constraints
   vector[P] con_sign; // Sign of constraints -1, +1 or 0
   int paircon_rows; // # rows in pairs constraint matrix, 0 for none
-    matrix[paircon_rows, P] paircon_matrix; // Pair constraints: beta * paircon_matrix > 0
+  matrix[paircon_rows, P] paircon_matrix; // Pair constraints: beta * paircon_matrix > 0
   
   // Covariates
   int P_cov; // Number of Covariate parameters (coded)
@@ -157,7 +157,7 @@ data {
   int<lower = 0> splitsize; // grainsize for parallel processing 
   
   // Ragged array matching, For each task in 1:T, Specify:
-    array[T] int<lower = 1, upper = I> task_individual;
+  array[T] int<lower = 1, upper = I> task_individual;
   array[T] int<lower = 1, upper = N> start;
   array[T] int<lower = 1, upper = N> end;
   
@@ -172,7 +172,7 @@ data {
   
   // Attraction: Distingush Like vs Love, Hate vs Dislike
   vector[N] thresh_high_dev; //  1 = Love, -1 = Everything else
-    vector[N] thresh_low_dev;  // -1 = Hate (more negative), 1 = >Hate
+  vector[N] thresh_low_dev;  // -1 = Hate (more negative), 1 = >Hate
   
   // Hyper parameters for the conversion from time to weights
   real<lower = 0> timescale_con_hyper; // Default 2: resp scale/2 ~ beta(1,hyper);
@@ -186,7 +186,6 @@ transformed data{
   print("thresh_high_exist (Love) = ", thresh_high_exist);
   print("thresh_low_exist (Hate) = ", thresh_low_exist);
   
-  
   int est_att = 0; // initial, revised later
   int est_conv = 0; // iniial, revised later
   int est_scale_util; 
@@ -199,7 +198,7 @@ transformed data{
   array[tri_n,2]int tri_pos= get_pos(cov_block, tri_n); // position of elements
 
   int con_n = vec_not0(con_sign);
-  array[con_n] int con_p;               // Array of which parameters are sign constrained
+  array[con_n] int con_p;          // Array of which parameters are sign constrained
   matrix[con_n, I] con_delta;     // Con function scale for parameter and respondent
   int paircon_use = 0;
   
@@ -266,7 +265,7 @@ parameters {
   vector[I * est_att] thresh_base;  // Attraction: threshold for swipe good or bad each respondent
   // Attraction has Love vs Like, Dislike vs Hate
   vector<lower = 0>[I * thresh_high_exist] thresh_high_delta; // Resp specific threshold from base to high (Like vs Love)
-  vector <lower = 0>[I * thresh_low_exist] thresh_low_delta; // Resp specific threshold from base to low (hate vs dislike)
+  vector<lower = 0>[I * thresh_low_exist] thresh_low_delta; // Resp specific threshold from base to low (hate vs dislike)
   
   // array[thresh_high_exist] <lower = -1.5> high_delta_mu;
   // vector[I * thresh_high_exist] high_delta_z; // Resp specific deviation for Like vs Love
@@ -298,27 +297,27 @@ transformed parameters {
 model {
   // priors on the parameters
   alpha ~ normal(prior_alpha, a_sig); // PriorAlpha can be vector of 0's or AggModel
-target+= chi_square_lpdf(bart_c|df_chi); // for (i in 1:P) bart_c[i] ~ chi_square(P + df - i + 1);
-if (tri_n > 0) bart_z ~ std_normal();
-to_vector(z) ~ std_normal(); // log probabilities of each choice in the dataset
-if (P_cov > 0) to_vector(i_cov_load) ~ std_normal();
-if (paircon_use == 1) target += -sum(log1p_exp(-100 * (paircon_matrix * beta_ind))); // penalty for soft constraints
+  target+= chi_square_lpdf(bart_c|df_chi); // for (i in 1:P) bart_c[i] ~ chi_square(P + df - i + 1);
+  if (tri_n > 0) bart_z ~ std_normal();
+  to_vector(z) ~ std_normal(); // log probabilities of each choice in the dataset
+  if (P_cov > 0) to_vector(i_cov_load) ~ std_normal();
+  if (paircon_use == 1) target += -sum(log1p_exp(-100 * (paircon_matrix * beta_ind))); // penalty for soft constraints
 
-if (est_scale_util == 1){ // both types exist --> scale factor
-  beta_scale ~ normal(beta_scale_mu[1],beta_scale_sigma[1]);
-  beta_scale_mu ~ normal(1, 2);
-  beta_scale_sigma ~ normal(1, 2);
-} 
+  if (est_scale_util == 1){ // both types exist --> scale factor
+    beta_scale ~ normal(beta_scale_mu[1],beta_scale_sigma[1]);
+    beta_scale_mu ~ normal(1, 2);
+    beta_scale_sigma ~ normal(1, 2);
+  } 
 
-if (est_conv == 1) timescale_con_u ~ beta(1,timescale_con_hyper); // biasing toward 0 = flat weights
-if (est_att == 1){
-  timescale_att_u ~ beta(1,timescale_att_hyper);
-  thresh_base ~ normal(0, 10);
-  if (thresh_high_exist == 1) thresh_high_delta ~ normal(1, 2); // If Love
-  if (thresh_low_exist == 1) thresh_low_delta ~ normal(1, 2); // If Hate
-}    
+  if (est_conv == 1) timescale_con_u ~ beta(1,timescale_con_hyper); // biasing toward 0 = flat weights
+  if (est_att == 1){
+    timescale_att_u ~ beta(1,timescale_att_hyper);
+    thresh_base ~ normal(0, 10);
+    if (thresh_high_exist == 1) thresh_high_delta ~ normal(1, 2); // If Love
+    if (thresh_low_exist == 1) thresh_low_delta ~ normal(1, 2); // If Hate
+  }    
 
-target += reduce_sum(MNL_LL_par, array_slice, splitsize, 
+  target += reduce_sum(MNL_LL_par, array_slice, splitsize, 
                      beta_ind, ind, dep, wts, start, end, task_individual,
                      task_type, timez_flip,
                      (est_scale_util ? beta_scale : beta_scale_1),  // utility scale conv --> attr
