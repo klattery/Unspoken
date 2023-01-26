@@ -1,10 +1,15 @@
-conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, items_task, n_versions, restrictions_table, constraints_table, shiny = TRUE) {
+conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, items_task, n_versions, restrictions_table, constraints_table,
+                                shiny = TRUE) {
   if(shiny) {
     progress <- shiny::Progress$new()
     on.exit(progress$close())
     progress$set(message = 'Calculating', value = 0)
   }
+  # setup multi-threading (Linux only)
   r_cores <- min(8,max(detectCores() -1,1))
+  check_mclapply <- try(mclapply(1,function(x) x == 1,mc.cores = r_cores),silent = TRUE)
+  if (class(check_mclapply) == "try-error") r_cores <- 1 # Set cores to 1 if mclapply does not work
+  
   ################################################################
   ####      Generate Experimental Design of Pairwise Items      ###########
   ###       Written April 2016 Kevin Lattery, Update 8/2018     ##########
@@ -24,13 +29,13 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   } else {
     set_comp <- ((ntest+1):(ntest+ntest_comp))
   }
-
+  
   if (is.null(restrictions_table)) {
     must_haves <- as.data.frame(c(1:n_versions))
   } else {
     must_haves <- as.data.frame(restrictions_table)
   }
-
+  
   if (is.null(constraints_table)) {
     con_pairs <- NULL
   } else {
@@ -175,7 +180,9 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   # Next step TAKES TIME
   if(shiny) progress$inc(.2, message = "1. Creating Design for Items Shown Each Version")
   if(!shiny) message("1. Creating Design for Items Shown Each Version")
-  multdesigns <- mclapply(1:designs_stage1, function(i) gen_design(design_in, ntest_perver, target_1, target_1_wt), mc.cores = r_cores)
+  if(ntest_perver == ntest){
+    multdesigns <- list(matrix(1,nrow(design_in),ncol(design_in)))
+  } else  multdesigns <- mclapply(1:designs_stage1, function(i) gen_design(design_in, ntest_perver, target_1, target_1_wt), mc.cores = r_cores)
   fit_all <- sapply(multdesigns, compfit, target_1, target_1_wt) # fit of each member above
   design_testpick <- multdesigns[[which.min(fit_all)]]  # design of test items to show for each version (row)
   summary_stat <- t(design_testpick) %*% design_testpick # shows frequency (diagnol) and cross tab of items shown together
@@ -232,11 +239,8 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   diag(target_2_wt) <- nrow(target_2) * 5 # Can be adjusted higher to fit one-way
   
   #c) Find good n attribute designs (pairwise)
-  designs <- list() # designs will be stored here
-  stats_all <- NULL # summary stats for each design
-  for (i in 1:designs_stage2){ 
-    test <- gen_design_pair(task_code, n_tasks, target_2, target_2_wt)
-    designs[[i]] <- test
+  designs <- mclapply(1:designs_stage2, function(x) gen_design_pair(task_code, n_tasks, target_2, target_2_wt),mc.cores = r_cores)
+  stats_all <- do.call(rbind, lapply(designs, function(test){
     twoway <- t(test) %*% test
     kdet <- det(twoway)^(1/ncol(twoway))
     oneway <- diag(twoway)
@@ -244,28 +248,27 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
     diag(twoway) <- 0
     max2way <- max(twoway)
     stats <- c(oneway, kstd, max2way, kdet)
-    stats_all <- rbind(stats_all, stats)
-  }
+  }))
   #stats_all has one way freq, std of that, max 2 way, d-opt value
   colnames(stats_all) <- c(paste0("OneWay", 1:n_items), "Std","max2way", "DOpt")
   bad_dopt <- as.matrix(is.na(stats_all[,ncol(stats_all)]))
   stats_export <- cbind(1:nrow(stats_all), stats_all)
   colnames(stats_export)[1] <- "design_num"
   # write.table(stats_export, file = paste0(dir,"stats_all.csv"), sep = ",", na = ".", row.names = FALSE) 
-
+  
   # KEEP BEST DESIGNS
   # Create good_des in R  
-  check_sd_one <- as.matrix(tapply(stats_all[,n_items+1], stats_all[,n_items+1], length))
-  check_max_two <- as.matrix(tapply(stats_all[,n_items+2], stats_all[,n_items+2], length))
-
-    bal_one <- as.matrix(stats_all[,n_items+1] <= quantile(stats_all[,n_items+1], .5)) ###  oneway criteria
-    bal_two <- as.matrix(stats_all[,n_items+2] <= quantile(stats_all[,n_items+2], .5)) ###  twoway criteria
-    sum(bal_one * bal_two *!bad_dopt) # check count of designs meeting criteria above
-    check <- cbind(1:nrow(stats_all),stats_all)[bal_one & bal_two &!bad_dopt,] 
-    d_opt <- as.matrix(check[,ncol(check)])
-   good_des <- check[(check[,ncol(check)] >= quantile(d_opt, .25)),] 
-   if(shiny) progress$inc(.7, message = paste0("3. Selecting from ", nrow(good_des), " Designs for Versions"))
-   if(!shiny) message(paste0("3. Selecting from ", nrow(good_des), " Designs for Versions"))   
+  # check_sd_one <- as.matrix(tapply(stats_all[,n_items+1], stats_all[,n_items+1], length))
+  # check_max_two <- as.matrix(tapply(stats_all[,n_items+2], stats_all[,n_items+2], length))
+  
+  bal_one <- as.matrix(stats_all[,n_items+1] <= quantile(stats_all[,n_items+1], .5)) ###  oneway criteria
+  bal_two <- as.matrix(stats_all[,n_items+2] <= quantile(stats_all[,n_items+2], .5)) ###  twoway criteria
+  sum(bal_one * bal_two *!bad_dopt) # check count of designs meeting criteria above
+  check <- cbind(1:nrow(stats_all),stats_all)[bal_one & bal_two &!bad_dopt,] 
+  d_opt <- as.matrix(check[,ncol(check)])
+  good_des <- check[(check[,ncol(check)] >= quantile(d_opt, .25)),] 
+  if(shiny) progress$inc(.7, message = paste0("3. Selecting from ", nrow(good_des), " Designs for Versions"))
+  if(!shiny) message(paste0("3. Selecting from ", nrow(good_des), " Designs for Versions"))   
   # first column of good_des has the design numbers we want to keep
   # Other columns are not relevant
   
@@ -278,7 +281,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   #                      STAGE 3                                                  #
   #    Select Stage 2 Binary Tasks, Recoding the items to match Stage 1           #
   #################################################################################
-    
+  
   # Get new target based on test + competitive items
   get_target <- function(x){
     design_new <- NULL
@@ -377,9 +380,9 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
     } #end ksamp
     design_new <- rbind(design_new, cbind(i,winner))
     print(paste0("Version " ,i))
-   }
-   # design_new contains initial design from one loop through
-   tab_design <- t(design_new[,-1]) %*% design_new[,-1] # check one-way and two-way
+  }
+  # design_new contains initial design from one loop through
+  tab_design <- t(design_new[,-1]) %*% design_new[,-1] # check one-way and two-way
   
   colnames(design_new) <- c("Version", vnames)
   colnames(tab_design) <- vnames
@@ -406,13 +409,13 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   tasks <- do.call(c, lapply(split(versions, versions), function(x) 1:length(x)))
   items <- t(sapply(1:nrow(design_new),function(i) which(1 == design_new[i,-1])))
   n_concept <- ncol(items)
-
+  
   conv_stack <- do.call(rbind, lapply(1:nrow(items), function(i){
     result <- data.frame(version = rep(versions[i], n_concept),
                          task = rep(tasks[i], n_concept),
                          order = 1:n_concept,
                          item = sample(items[i,], n_concept)
-                         )
+    )
     return(result)
   }))
   conv_stack <- conv_stack[order(conv_stack$version, conv_stack$task, conv_stack$order),]
@@ -439,6 +442,7 @@ attraction_function <- function(conv_stack, show_eachitem_attraction){
   }))
   return(attr_stack)  
 }
+
 
 
 
