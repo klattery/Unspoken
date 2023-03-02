@@ -21,7 +21,9 @@ clean_swipe <- function(att_data, att_cols, att_recode){
     }
     time_z_flip <- -1 * as.vector(time_z)
     time_z_flip[time_bad] <- 0 # mean value for bad times
+    options(warn = -1)
     time_z_flip[time_lovehate] <- max(5, 2 * max(time_z_flip, na.rm =TRUE)) # very fast
+    options(warn = 0)
     
     result <- data.frame(
       id = kdata[,att_cols$id],
