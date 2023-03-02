@@ -91,8 +91,10 @@ env_shiny$server_unspoken1 <- function(input, output) {
   
   observeEvent(input$setup_ready, {
     .GlobalEnv$out_prefix <- input$out_prefix
-    if (!is.null(data1())) {.GlobalEnv$att_data <- data1()}
-    if (!is.null(data2())) {.GlobalEnv$conv_data <- data2()}
+    #if (!is.null(data1())) {.GlobalEnv$att_data <- data1()}
+    #if (!is.null(data2())) {.GlobalEnv$conv_data <- data2()}
+    .GlobalEnv$att_data <- data1()
+    .GlobalEnv$conv_data <- data2()
     if (input$use_cov){
       .GlobalEnv$data_cov <- data3()
     } else .GlobalEnv$data_cov <- NULL
