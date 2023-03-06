@@ -238,7 +238,7 @@ dir_run <- create_tempdir(dir, out_folder, save_specs = FALSE, code_master = dat
 HB_fit <- HB_model$sample(modifyList(data_stan, data_model),
                           iter_warmup = data_model$iter_warmup,
                           iter_sampling = data_model$iter_sampling,
-                          output_dir = dir$stan_model,
+                          output_dir = dir$stanmodel,
                           output_basename = stan_outname, # set stan_outname above if changing
                           chains = 2,
                           parallel_chains = 2,
