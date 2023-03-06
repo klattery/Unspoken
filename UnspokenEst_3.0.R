@@ -206,7 +206,7 @@ if (!is.null(indcode_spec)){
 
 ################################################### 
 ## 5. OPTIONALLY CHANGE DEFAULTS
-data_model <- modifyList(data_model,
+data_model <- c(data_model,
   list(
     con_use = 1, # 0 = ignore constraints, 1 = use
     con_factors = c(mult = .25, bound = 1.5), # Default (.25, 1.5) must be >0
