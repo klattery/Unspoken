@@ -98,7 +98,7 @@ env_shiny$server_unspoken1 <- function(input, output) {
     .GlobalEnv$control_code$est_att <- input$est_att
     .GlobalEnv$control_code$est_conv <- input$est_conv
     .GlobalEnv$control_code$est_comb <- input$est_both
-
+    .GlobalEnv$control_code$auto_stop <- input$auto_stop
     
     #if (!is.null(data1())) {.GlobalEnv$att_data <- data1()}
     #if (!is.null(data2())) {.GlobalEnv$conv_data <- data2()}
