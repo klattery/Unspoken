@@ -204,7 +204,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
   designs_stage2 <- 10000 # Number of Designs to create: 10,000; higher for more sparse
   
   #a) Create task_code as tasks to choose from (indicator coding)
-  if (items_task > 3) { # Added 3/2019
+  if (choose(n_items, items_task) > 4000000) { # Changed Apr 2023
     vec_0 <- rep(0, n_items)
     task_con <- do.call(rbind, lapply(1:100000, function(x){
       picks <- sample(1:n_items, items_task)
