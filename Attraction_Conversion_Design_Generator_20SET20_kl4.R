@@ -219,6 +219,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
     for (i in 1:ncol(task_con)){
       task_code[cbind(1:nrow(task_code),task_con[,i])] <- 1
     }
+    task_code <- task_code[sample(1:nrow(task_code), 100000),] # sample 100k from all
   }
   # Clean task_code based on con_pairs Added Oct 2022
   bad <- duplicated(task_code)
