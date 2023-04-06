@@ -232,6 +232,7 @@ conversion_function <- function(ntest, ntest_perver, ntest_comp, show_eachitem, 
     if(shiny) progress$inc(1, message = "FATAL Error: Possible tasks < Requested Tasks")
     stop("FATAL Error: Possible tasks < Requested Tasks")
   } 
+  if (nrow(task_code) > 10000) task_code <- task_code[sample(1:nrow(task_code),10000),] # sample 10k from all
   
   #b) Create target matrix for version
   target_temp <- t(task_code) %*% task_code # empirical target sampling from
