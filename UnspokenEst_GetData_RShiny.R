@@ -94,7 +94,7 @@ env_shiny$server_unspoken1 <- function(input, output) {
   output$file3 <- renderTable({data3()[1:10,]})
   
   observeEvent(input$setup_ready, {
-    .GlobalEnv$out_prefix <- input$out_prefix
+    .GlobalEnv$control_code$out_prefix <- input$out_prefix
     .GlobalEnv$control_code$est_att <- input$est_att
     .GlobalEnv$control_code$est_conv <- input$est_conv
     .GlobalEnv$control_code$est_comb <- input$est_both
