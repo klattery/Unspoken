@@ -288,6 +288,7 @@ if (control_code$est_att){
   control_code_temp <- control_code
   control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_att")
   unspoken_est_one(data_stan, data_model, control_code_temp,stan_outname_temp)
+  rm(stan_outname_temp, control_code_temp)
 }
 if (control_code$est_conv){
   stan_outname_temp <- paste0(stan_outname, "_conv")
@@ -299,6 +300,7 @@ if (control_code$est_conv){
   control_code_temp <- control_code
   control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_conv")
   unspoken_est_one(data_stan, data_model, control_code_temp,stan_outname_temp)
+  rm(stan_outname_temp, control_code_temp)
 }
 if (control_code$est_comb){
   stan_outname_temp <- paste0(stan_outname, "_comb")
@@ -310,6 +312,7 @@ if (control_code$est_comb){
   control_code_temp <- control_code
   control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_comb")
   unspoken_est_one(data_stan, data_model, control_code_temp,stan_outname_temp)
+  rm(stan_outname_temp, control_code_temp)
 }
 if (control_code$auto_stop){
   save.image(".RData")
