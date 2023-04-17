@@ -280,37 +280,37 @@ dir.create(my_temp <- file.path(dir$work, file.path(control_code$out_folder_main
 stan_outname <- paste0(control_code$out_prefix, "_StanOut_", time_start)
 if (control_code$est_att){
   stan_outname_temp <- paste0(stan_outname, "_att")
-  control_code$dir_run <- create_tempdir(dir, file.path(control_code$out_folder_main,"attraction"), control_code$out_prefix,
+  control_code_temp <- control_code
+  control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_att")
+  control_code_temp$dir_run <- create_tempdir(dir, file.path(control_code$out_folder_main,"attraction"), control_code$out_prefix,
                                          stan_outname_temp, save_specs = FALSE, code_master = data_stan$code_master)
   message("\n\nEstimating Attraction Only Model")
   data_model$est_att = 1
   data_model$est_conv = 0
-  control_code_temp <- control_code
-  control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_att")
   unspoken_est_one(data_stan, data_model, control_code_temp,stan_outname_temp)
   rm(stan_outname_temp, control_code_temp)
 }
 if (control_code$est_conv){
   stan_outname_temp <- paste0(stan_outname, "_conv")
-  control_code$dir_run <- create_tempdir(dir, file.path(control_code$out_folder_main,"conversion"), control_code$out_prefix,
+  control_code_temp <- control_code
+  control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_conv")
+  control_code_temp$dir_run <- create_tempdir(dir, file.path(control_code$out_folder_main,"conversion"), control_code$out_prefix,
                                          stan_outname_temp, save_specs = FALSE, code_master = data_stan$code_master)
   message("\n\nEstimating Conversion Only Model")
   data_model$est_conv = 1
   data_model$est_att = 0
-  control_code_temp <- control_code
-  control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_conv")
   unspoken_est_one(data_stan, data_model, control_code_temp,stan_outname_temp)
   rm(stan_outname_temp, control_code_temp)
 }
 if (control_code$est_comb){
   stan_outname_temp <- paste0(stan_outname, "_comb")
-  control_code$dir_run <- create_tempdir(dir, file.path(control_code$out_folder_main,"combined"), control_code$out_prefix,
+  control_code_temp <- control_code
+  control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_comb")
+  control_code_temp$dir_run <- create_tempdir(dir, file.path(control_code$out_folder_main,"combined"), control_code$out_prefix,
                                          stan_outname_temp, save_specs = FALSE, code_master = data_stan$code_master)
   message("\n\nEstimating Combined Attraction + Conversion Model")
   data_model$est_conv = 1
   data_model$est_att = 1
-  control_code_temp <- control_code
-  control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_comb")
   unspoken_est_one(data_stan, data_model, control_code_temp,stan_outname_temp)
   rm(stan_outname_temp, control_code_temp)
 }
