@@ -263,7 +263,6 @@ rm(indcode_spec); rm(indcode_list); gc() # Clear RAM
 HB_model <- cmdstan_model(file.path(dir$stanmodel,stan_file), quiet = TRUE,
                           cpp_options = list(stan_threads = TRUE))
 time_start <- format(Sys.time(), '%y%m%d-%H%M%S')
-stan_outname <- paste0(control_code$out_prefix, "_StanOut_", time_start)   
 control_code$out_folder_main <- paste0(control_code$out_prefix, "_", time_start)
 data_model <- c(data_model_base,
                 list(
@@ -276,34 +275,41 @@ data_model <- c(data_model_base,
                 )
 )
 data_model$splitsize <- round(.5 + data_stan$I/(4 * data_model$threads_per_chain))
-dir.create(my_temp <- file.path(dir$work, file.path(control_code$out_folder_main)))
 
+dir.create(my_temp <- file.path(dir$work, file.path(control_code$out_folder_main)))
+stan_outname <- paste0(control_code$out_prefix, "_StanOut_", time_start)
 if (control_code$est_att){
+  stan_outname_temp <- paste0(stan_outname, "_att")
   control_code$dir_run <- create_tempdir(dir, file.path(control_code$out_folder_main,"attraction"), control_code$out_prefix,
-                                         paste0(stan_outname, "_att"), save_specs = FALSE, code_master = data_stan$code_master)
+                                         stan_outname_temp, save_specs = FALSE, code_master = data_stan$code_master)
   message("\n\nEstimating Attraction Only Model")
   data_model$est_att = 1
   data_model$est_conv = 0
-  unspoken_est_one(data_stan, data_model, control_code,
-                   stan_outname = paste0(stan_outname, "_att"))
+  control_code_temp <- control_code
+  control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_att")
+  unspoken_est_one(data_stan, data_model, control_code_temp,stan_outname_temp)
 }
 if (control_code$est_conv){
+  stan_outname_temp <- paste0(stan_outname, "_conv")
   control_code$dir_run <- create_tempdir(dir, file.path(control_code$out_folder_main,"conversion"), control_code$out_prefix,
-                                         paste0(stan_outname, "_conv"), save_specs = FALSE, code_master = data_stan$code_master)
+                                         stan_outname_temp, save_specs = FALSE, code_master = data_stan$code_master)
   message("\n\nEstimating Conversion Only Model")
   data_model$est_conv = 1
   data_model$est_att = 0
-  unspoken_est_one(data_stan, data_model, control_code,
-                   stan_outname = paste0(stan_outname, "_conv"))
+  control_code_temp <- control_code
+  control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_conv")
+  unspoken_est_one(data_stan, data_model, control_code_temp,stan_outname_temp)
 }
 if (control_code$est_comb){
+  stan_outname_temp <- paste0(stan_outname, "_comb")
   control_code$dir_run <- create_tempdir(dir, file.path(control_code$out_folder_main,"combined"), control_code$out_prefix,
-                                         paste0(stan_outname, "_comb"), save_specs = FALSE, code_master = data_stan$code_master)
+                                         stan_outname_temp, save_specs = FALSE, code_master = data_stan$code_master)
   message("\n\nEstimating Combined Attraction + Conversion Model")
   data_model$est_conv = 1
   data_model$est_att = 1
-  unspoken_est_one(data_stan, data_model, control_code,
-                   stan_outname = paste0(stan_outname, "_comb"))
+  control_code_temp <- control_code
+  control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_comb")
+  unspoken_est_one(data_stan, data_model, control_code_temp,stan_outname_temp)
 }
 if (control_code$auto_stop){
   save.image(".RData")
