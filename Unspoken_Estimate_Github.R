@@ -176,7 +176,7 @@ unspoken_est_one <- function(data_stan, data_model, control_code, stan_outname){
   meta_data <- HB_fit$metadata()
   meta_data$output_files <- HB_fit$output_files()
   meta_data$return_codes <- HB_fit$return_codes()
-  meta_data$inv_metric <- lapply(HB_fit$inv_metric(), diag)
+  meta_data$inv_metric <- HB_fit$inv_metric(matrix = FALSE)
   saveRDS(meta_data, file.path(control_code$dir_run, paste0(control_code$out_prefix, "_meta_data.rds")))
   
   #####  Check Convergence, Export Files  
