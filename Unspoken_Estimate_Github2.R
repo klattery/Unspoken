@@ -252,11 +252,16 @@ if (!is.null(indcode_spec)){
                                                       c("task_type","time_z_flip","love","hate")],
                               force_sumtask_dep1 = FALSE)
 } else cat("!! STOP NOW and FIX NAMES that do not match !!")
+per_good <- sqldf("select id, avg(dep) as per_good from data_all where data_all.task_type =2 group by id")
+kmatch <- match(data_stan$resp_id, per_good$id)
+data_stan$swipe_good <- per_good$per_good[kmatch]
+data_stan$swipe_good[is.na(data_stan$swipe_good)] <- mean(data_stan$swipe_good, na.rm= TRUE)
+
 
 ##################################
 # ESTIMATE MODEL =============
 #####  Specify Stan Model 
-stan_file <- "Unspoken_Final_v2.4.stan" # Name of stan model in dir$stanmodel
+stan_file <- "Unspoken_Final_v2.5.stan" # Name of stan model in dir$stanmodel
 rm(indcode_spec); rm(indcode_list); gc() # Clear RAM
 
 #####  Compile and RunStan Model 
@@ -283,7 +288,7 @@ if (control_code$est_att){
   control_code_temp <- control_code
   control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_att")
   control_code_temp$dir_run <- create_tempdir(dir, file.path(control_code$out_folder_main,"attraction"), control_code$out_prefix,
-                                         stan_outname_temp, save_specs = FALSE, code_master = data_stan$code_master)
+                                              stan_outname_temp, save_specs = FALSE, code_master = data_stan$code_master)
   message("\n\nEstimating Attraction Only Model")
   data_model$est_att = 1
   data_model$est_conv = 0
@@ -295,7 +300,7 @@ if (control_code$est_conv){
   control_code_temp <- control_code
   control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_conv")
   control_code_temp$dir_run <- create_tempdir(dir, file.path(control_code$out_folder_main,"conversion"), control_code$out_prefix,
-                                         stan_outname_temp, save_specs = FALSE, code_master = data_stan$code_master)
+                                              stan_outname_temp, save_specs = FALSE, code_master = data_stan$code_master)
   message("\n\nEstimating Conversion Only Model")
   data_model$est_conv = 1
   data_model$est_att = 0
@@ -307,7 +312,7 @@ if (control_code$est_comb){
   control_code_temp <- control_code
   control_code_temp$out_prefix <- paste0(control_code$out_prefix, "_comb")
   control_code_temp$dir_run <- create_tempdir(dir, file.path(control_code$out_folder_main,"combined"), control_code$out_prefix,
-                                         stan_outname_temp, save_specs = FALSE, code_master = data_stan$code_master)
+                                              stan_outname_temp, save_specs = FALSE, code_master = data_stan$code_master)
   message("\n\nEstimating Combined Attraction + Conversion Model")
   data_model$est_conv = 1
   data_model$est_att = 1
