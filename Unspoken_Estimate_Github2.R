@@ -254,8 +254,11 @@ if (!is.null(indcode_spec)){
 } else cat("!! STOP NOW and FIX NAMES that do not match !!")
 per_good <- sqldf("select id, avg(dep) as per_good from data_all where data_all.task_type =2 group by id")
 kmatch <- match(data_stan$resp_id, per_good$id)
-data_stan$swipe_good <- per_good$per_good[kmatch]
-data_stan$swipe_good[is.na(data_stan$swipe_good)] <- mean(data_stan$swipe_good, na.rm= TRUE)
+swipe_good <- per_good$per_good[kmatch]
+swipe_good_mu <- mean(swipe_good, na.rm= TRUE)
+if (is.na(swipe_good_mu)){swipe_good_mu <- .5}
+swipe_good[is.na(swipe_good)] <- swipe_good_mu
+data_stan$swipe_good <- swipe_good
 
 
 ##################################
