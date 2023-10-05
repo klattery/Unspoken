@@ -195,7 +195,7 @@ conversion_function_des <- function(ntest,
   
   # Next step TAKES TIME
   if(shiny) progress$inc(.2, message = "1. Creating Design for Items Shown Each Version")
-  message("1. Creating Design for Items Shown Each Version")
+  if(!shiny) message("1. Creating Design for Items Shown Each Version")
   if(ntest_perver == ntest){
     multdesigns <- list(matrix(1,nrow(design_in),ncol(design_in)))
   } else  multdesigns <- mclapply(1:designs_stage1, function(i) gen_design(design_in, ntest_perver, target_1, target_1_wt), mc.cores = r_cores)
@@ -207,7 +207,7 @@ conversion_function_des <- function(ntest,
   if (!is.null(set_comp)) vnames <- c(vnames, paste0("Comp", set_comp))
   colnames(design_itemsall) <- vnames 
   if(shiny) progress$inc(0.6, message = "2. Creating Designs")
-  message("2. Creating Designs")
+  if(!shiny) message("2. Creating Designs")
   
   # Export list of items
   # write.table(design_itemsall, file = paste0(dir,"design_itemsall.csv"), sep = ",", na = ".", row.names = FALSE) 
@@ -258,18 +258,6 @@ conversion_function_des <- function(ntest,
   
   #c) Find good n attribute designs (pairwise)
   designs <- mclapply(1:designs_stage2, function(x) gen_design_pair(task_code, n_tasks, target_2, target_2_wt),mc.cores = r_cores)
-  missing <- sapply(designs, function(x) sum(colSums(x) == 0))
-  designs <- designs[missing == 0]
-  if (length(designs) < 100){
-    diag(target_2_wt) <- diag(target_2_wt) * nrow(target_2) # Weight the diagonal more since we did not do well
-    designs2 <- mclapply(1:designs_stage2, function(x) gen_design_pair(task_code, n_tasks, target_2, target_2_wt),mc.cores = r_cores)
-    designs <- c(designs, designs2)
-    missing <- sapply(designs, function(x) sum(colSums(x) == 0))
-    designs <- designs[missing == 0]
-    if (length(designs) < 100){
-      message("Designer could only create ", length(designs), " Designs to draw versions") 
-    }   
-  }
   stats_all <- do.call(rbind, lapply(designs, function(test){
     twoway <- t(test) %*% test
     kdet <- det(twoway)^(1/ncol(twoway))
@@ -298,7 +286,7 @@ conversion_function_des <- function(ntest,
   d_opt <- as.matrix(check[,ncol(check)])
   good_des <- check[(check[,ncol(check)] >= quantile(d_opt, .25)),] 
   if(shiny) progress$inc(.7, message = paste0("3. Selecting from ", nrow(good_des), " Designs for Versions"))
-  message(paste0("3. Selecting from ", nrow(good_des), " Designs for Versions"))   
+  if(!shiny) message(paste0("3. Selecting from ", nrow(good_des), " Designs for Versions"))   
   # first column of good_des has the design numbers we want to keep
   # Other columns are not relevant
   
@@ -451,7 +439,7 @@ conversion_function_des <- function(ntest,
   conv_stack <- conv_stack[order(conv_stack$version, conv_stack$task, conv_stack$order),]
   
   if(shiny) progress$inc(.8, message = "4. Finished Conversion")
-  message("4. Finished Conversion")
+  if(!shiny) message("4. Finished Conversion")
   return(conv_stack)
 } 
 
